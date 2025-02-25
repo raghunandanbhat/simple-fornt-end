@@ -1,4 +1,4 @@
-use meval::eval_str;
+use evalexpr::eval;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -9,7 +9,7 @@ pub fn eval_expression(expr: &str) -> String {
         return "Error: Empty expression".to_string();
     }
 
-    match eval_str(trimmed_expr) {
+    match eval(trimmed_expr) {
         Ok(result) => result.to_string(),
         Err(_) => "Error: Invalid expression".to_string(),
     }
@@ -76,13 +76,15 @@ mod tests {
     #[test]
     fn invalid_positive_inf() {
         let res = eval_expression("2/0");
-        assert_eq!(res, "inf");
+        // assert_eq!(res, "inf");
+        assert_eq!(res, "Error: Invalid expression");
     }
 
     #[test]
     fn invalid_negative_inf() {
         let res = eval_expression("-2/0");
-        assert_eq!(res, "-inf");
+        // assert_eq!(res, "-inf");
+        assert_eq!(res, "Error: Invalid expression");
     }
 
     #[test]
@@ -115,15 +117,23 @@ mod tests {
         assert_eq!(res, "Error: Invalid expression");
     }
 
+    // probably a bug in meval-rs, evalexpr too
     #[test]
-    fn weird_test() {
-        let res = eval_expression("2 --- 1"); // probably a bug in meval-rs
+    fn weird_test1() {
+        let res = eval_expression("2 --- 1");
         assert_eq!(res, "1");
+    }
+
+    // yet another bug!?
+    #[test]
+    fn weird_test2() {
+        let res = eval_expression("2 -- 1");
+        assert_eq!(res, "3");
     }
 
     #[test]
     fn another_weird_test() {
-        let res = eval_expression("2 -*- 1"); // this doesn't evaluates
+        let res = eval_expression("2 -*- 1"); // this doesn't evaluate
         assert_eq!(res, "Error: Invalid expression");
     }
 }
